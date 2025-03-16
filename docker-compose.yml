@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres_fruit_app
+    restart: always
+    environment:
+      POSTGRES_DB: ithub
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./fruit-delivery-backend
+    container_name: backend_fruit_app
+    depends_on:
+      - postgres
+    environment:
+      # На практике - либо меняем application.properties,
+      # либо переопределяем через ENV:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ithub
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./fruit-delivery-frontend
+    container_name: frontend_fruit_app
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  pgdata:
